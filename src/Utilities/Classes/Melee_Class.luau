@@ -1,0 +1,10 @@
+--!strict
+--■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+--  ◄► Title:       Melee_Class
+--  ◄► Version:     1.0
+--  ◄► Date:        17/07/2026
+--  ◄► Author:      DeathToTheStadium
+--  ◄► Description: Utilities/Classes object definition for melee-type
+--                  weapons — handles melee state, behavior, and
+--                  instance construction within the weapon framework.
+--■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■

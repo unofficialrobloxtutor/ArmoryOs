@@ -1,0 +1,10 @@
+--!strict
+--■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+--  ◄► Title:       Throw_Class
+--  ◄► Version:     1.0
+--  ◄► Date:        17/07/2026
+--  ◄► Author:      DeathToTheStadium
+--  ◄► Description: Utilities/Classes object definition for throwable-type
+--                  weapons — handles throwable state, behavior, and
+--                  instance construction within the weapon framework.
+--■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■

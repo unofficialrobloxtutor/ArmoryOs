@@ -1,0 +1,11 @@
+{
+  "name": "[ARMORY OS] ADVANCE WEAPON FRAMEWORK",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "AmoryOS": {
+        "$path": "src"
+      }
+    }
+  }
+}

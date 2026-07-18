@@ -1,0 +1,9 @@
+--!strict
+--■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+--  ◄► Title:       Throw
+--  ◄► Version:     1.0
+--  ◄► Date:        17/07/2026
+--  ◄► Author:      DeathToTheStadium
+--  ◄► Description: Utilities/Types/Weapons type definitions for throwable
+--                  weapon data and configuration, backing Throw_Class.
+--■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■

@@ -1,0 +1,9 @@
+--!strict
+--■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+--  ◄► Title:       Melee
+--  ◄► Version:     1.0
+--  ◄► Date:        17/07/2026
+--  ◄► Author:      DeathToTheStadium
+--  ◄► Description: Utilities/Types/Weapons type definitions for melee
+--                  weapon data and configuration, backing Melee_Class.
+--■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■

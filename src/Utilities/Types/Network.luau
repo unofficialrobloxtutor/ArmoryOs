@@ -1,0 +1,10 @@
+--!strict
+--■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+--  ◄► Title:       Network
+--  ◄► Version:     1.0
+--  ◄► Date:        17/07/2026
+--  ◄► Author:      DeathToTheStadium
+--  ◄► Description: Utilities/Types type definitions for networking —
+--                  remote payloads and message shapes used by
+--                  Utilities/Core/Network.
+--■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
