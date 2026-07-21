@@ -33,7 +33,7 @@ local MAX_PITCH = math.rad(89)
 --■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
 --	CHANNEL DEFINITION (shared — must match on server and client)
 --■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-Module.Channel = RoExpress.Stream.Channel("camera/thirdperson/look", RoExpress.Stream.Schema({
+Module.Channel = RoExpress.Stream.Channel("camera/thirdperson/look", RoExpress.Stream.Schema.New({
 	{ "Pitch", "f32" }, -- radians, up/down camera angle
 }), {
 	reliable = false,

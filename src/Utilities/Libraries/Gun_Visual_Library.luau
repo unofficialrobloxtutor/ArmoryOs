@@ -276,6 +276,79 @@ Module.CreateBulletHole = function(decalId: string, hitPart: BasePart, position:
 	return hole
 end
 
+--► Texture-free bullet hole — a small dark disc flush with the surface.
+--  The zero-setup fallback when no decal id is configured, so impacts are
+--  always visible out of the box.
+Module.CreateSimpleBulletHole = function(position: Vector3, normal: Vector3, config: {
+	Size:     number?,
+	Color:    Color3?,
+	Lifetime: number?,
+}?): BasePart
+	local cfg      = config or {}
+	local size     = cfg.Size or 0.25
+	local lifetime = cfg.Lifetime or Module.DefaultHoleLifetime
+
+	local hole = Instance.new("Part")
+	hole.Shape        = Enum.PartType.Cylinder
+	hole.Size          = Vector3.new(0.02, size, size)
+	hole.Color          = cfg.Color or Color3.fromRGB(25, 25, 25)
+	hole.Material        = Enum.Material.SmoothPlastic
+	hole.Anchored         = true
+	hole.CanCollide        = false
+	hole.CanQuery           = false
+	hole.CanTouch            = false
+	-- Cylinder axis is X — aim it along the surface normal.
+	hole.CFrame = CFrame.lookAt(position + normal * 0.01, position + normal) * CFrame.Angles(0, math.rad(90), 0)
+	hole.Parent = Workspace
+
+	local fadeStart = math.max(lifetime - 1.5, 0)
+	task.delay(fadeStart, function()
+		if hole.Parent then
+			TweenService:Create(hole, TweenInfo.new(lifetime - fadeStart), {Transparency = 1}):Play()
+		end
+	end)
+
+	Debris:AddItem(hole, lifetime)
+	return hole
+end
+
+--► Procedural ricochet sparks — a short orange particle burst thrown out
+--  along the surface normal (or a supplied bounce direction). No template
+--  or uploaded asset needed; uses the engine's built-in sparkle texture.
+Module.CreateRicochetSparks = function(position: Vector3, normal: Vector3, config: {
+	Direction: Vector3?, -- spark travel direction, defaults to the normal
+	Count:     number?,
+	Speed:     number?,
+}?)
+	local cfg       = config or {}
+	local direction = cfg.Direction or normal
+
+	local holder = Instance.new("Part")
+	holder.Size        = Vector3.one * 0.1
+	holder.Transparency = 1
+	holder.Anchored      = true
+	holder.CanCollide     = false
+	holder.CanQuery        = false
+	holder.CanTouch         = false
+	holder.CFrame = CFrame.lookAt(position, position + direction)
+	holder.Parent = Workspace
+
+	local emitter = Instance.new("ParticleEmitter")
+	emitter.Texture           = "rbxasset://textures/particles/sparkles_main.dds"
+	emitter.Color              = ColorSequence.new(Color3.fromRGB(255, 200, 90), Color3.fromRGB(255, 120, 30))
+	emitter.LightEmission       = 1
+	emitter.Size                 = NumberSequence.new(0.15, 0)
+	emitter.Lifetime              = NumberRange.new(0.1, 0.3)
+	emitter.Speed                  = NumberRange.new((cfg.Speed or 20) * 0.6, cfg.Speed or 20)
+	emitter.SpreadAngle             = Vector2.new(25, 25)
+	emitter.EmissionDirection        = Enum.NormalId.Front
+	emitter.Enabled = false
+	emitter.Parent  = holder
+
+	emitter:Emit(cfg.Count or 12)
+	Debris:AddItem(holder, 1)
+end
+
 --■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
 --	AUDIO
 --■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■

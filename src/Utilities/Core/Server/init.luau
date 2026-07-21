@@ -21,9 +21,13 @@
 --                       weapon state to one player or everyone, over the
 --                       same RoExpress App the routes are mounted on.
 --■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+--► Services     ◄--
+local PhysicsService = game:GetService("PhysicsService")
+local Players        = game:GetService("Players")
 --► Requires     ◄--
 local RoExpress    = require(script.Parent.Parent.Libraries.RoExpress_Library)
 local ServerTypes  = require(script.Parent.Parent.Types.Server)
+local AssetsCore   = require(script.Assets)
 --► Tables       ◄--
 local Module = {}
 Module.__index = Module
@@ -31,9 +35,24 @@ Module.__index = Module
 export type WeaponEvent     = ServerTypes.WeaponEvent
 export type WeaponEventData = ServerTypes.WeaponEventData
 
+-- Server-authoritative snapshot of what a player currently has equipped.
+-- Created on a successful equip route, destroyed on unequip/leave. Route
+-- handlers and streams read/mutate this — never client-supplied data.
+export type WeaponSession = {
+	WeaponId   : string,
+	Category   : string,
+	Config     : any,               -- BaseConfig from Data/Configs
+	Ammo       : { In: number, Reserve: number, Max: number }?,
+	FireMode   : string?,
+	Reloading  : boolean,
+	LastFireAt : number,
+}
+
 export type Type = typeof(setmetatable({}, Module)) & {
 	App        : RoExpress.App,
+	Assets     : AssetsCore.Type,
 	_bindables : { [string]: BindableEvent },
+	_sessions  : { [Player]: WeaponSession },
 }
 
 --► Constants    ◄--
@@ -50,9 +69,25 @@ local WEAPON_EVENTS: { [string]: true } = {
 	WeaponStateChanged       = true,
 }
 
+-- CollisionGroup used by every client-built viewmodel (see Utilities/Core/
+-- Client _applyViewModelCollisions). Registered here so the group exists
+-- before any client assigns parts to it — groups replicate to clients.
+local VIEWMODEL_COLLISION_GROUP = "ViewModel"
+
 --■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
 --	PRIVATE
 --■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+-- Registers the ViewModel collision group and makes it collide with
+-- nothing (including itself) — viewmodels are purely visual, camera-
+-- parented rigs and must never touch characters, hitboxes, or the map.
+local function _initCollisionGroups()
+	if not PhysicsService:IsCollisionGroupRegistered(VIEWMODEL_COLLISION_GROUP) then
+		PhysicsService:RegisterCollisionGroup(VIEWMODEL_COLLISION_GROUP)
+	end
+	PhysicsService:CollisionGroupSetCollidable(VIEWMODEL_COLLISION_GROUP, "Default", false)
+	PhysicsService:CollisionGroupSetCollidable(VIEWMODEL_COLLISION_GROUP, VIEWMODEL_COLLISION_GROUP, false)
+end
 
 -- Lazily creates (and caches) the BindableEvent backing a weapon event.
 local function _bindable(self: Type, event: string): BindableEvent
@@ -76,7 +111,23 @@ end
 function Module.New(): Type
 	local self = setmetatable({}, Module) :: Type
 	self.App        = (RoExpress :: any)("App") :: RoExpress.App
+	self.Assets     = AssetsCore.New()
 	self._bindables = {}
+	self._sessions  = {}
+
+	-- Boot-time asset audit — warns about every rig/model/animation a
+	-- config expects but Assets/ doesn't provide, before anyone equips.
+	-- Deferred so boot never blocks on it and a bad config can't stall New().
+	task.defer(function()
+		self.Assets:Audit()
+	end)
+
+	Players.PlayerRemoving:Connect(function(player: Player)
+		self._sessions[player] = nil
+	end)
+
+	_initCollisionGroups()
+
 	return self
 end
 
@@ -107,6 +158,39 @@ function Module.Fire(self: Type, event: WeaponEvent, payload: WeaponEventData)
 end
 
 --■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+--	WEAPON SESSIONS — server-authoritative per-player equipped state
+--■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+--► Creates (replacing any existing) the player's weapon session from a
+--  server-side baked config — called by the equip route handlers.
+function Module.EquipWeapon(self: Type, player: Player, config: any): WeaponSession
+	local settings = config.WeaponSettings or {}
+	local ammoCfg  = settings.Ammo
+
+	local session: WeaponSession = {
+		WeaponId   = config.Name,
+		Category   = config.Category,
+		Config     = config,
+		Ammo       = ammoCfg and {In = ammoCfg.In, Reserve = ammoCfg.Reserve, Max = ammoCfg.Max} or nil,
+		FireMode   = settings.Fire and settings.Fire.Default_Fire_Mode or nil,
+		Reloading  = false,
+		LastFireAt = 0,
+	}
+	self._sessions[player] = session
+	return session
+end
+
+--► Clears the player's weapon session — called by the unequip routes.
+function Module.UnequipWeapon(self: Type, player: Player)
+	self._sessions[player] = nil
+end
+
+--► Returns the player's current weapon session, or nil if nothing equipped.
+function Module.GetSession(self: Type, player: Player): WeaponSession?
+	return self._sessions[player]
+end
+
+--■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
 --	STATE PUSH — server-authoritative weapon state replication
 --■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
 
@@ -129,10 +213,12 @@ end
 --■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
 
 function Module.Destroy(self: Type)
+	self.Assets:Destroy()
 	for _, bindable in pairs(self._bindables) do
 		bindable:Destroy()
 	end
 	table.clear(self._bindables)
+	table.clear(self._sessions)
 end
 
 return Module

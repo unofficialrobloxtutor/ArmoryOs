@@ -30,14 +30,39 @@ export type WeaponEventData = {
 	Data     : { [string]: any }?,
 }
 
+-- The server asset loader (Utilities/Core/Server/Assets) — canonical
+-- shapes live in Utilities/Types/Assets; typed `any` here to keep this
+-- file a leaf (no requires, no cycle risk). Narrow at the use site with
+-- Utilities/Types/Assets when you need the full method surface.
+-- Server-authoritative per-player equipped-weapon snapshot — see
+-- Utilities/Core/Server WeaponSession.
+export type WeaponSession = {
+	WeaponId   : string,
+	Category   : string,
+	Config     : any,
+	Ammo       : { In: number, Reserve: number, Max: number }?,
+	FireMode   : string?,
+	Reloading  : boolean,
+	LastFireAt : number,
+}
+
 export type Type = {
 	New: (self: any) -> Type,
+
+	-- Asset helpers — build viewmodels, weapon rigs, first-person models,
+	-- animation trees, and third-person character animations from Assets/.
+	Assets: any,
 
 	-- Server-side event bus — for other server scripts to react to
 	-- weapon lifecycle moments (damage systems, analytics, quests, etc).
 	On   : (self: Type, event: WeaponEvent, handler: (payload: WeaponEventData) -> ()) -> RBXScriptConnection,
 	Once : (self: Type, event: WeaponEvent, handler: (payload: WeaponEventData) -> ()) -> RBXScriptConnection,
 	Fire : (self: Type, event: WeaponEvent, payload: WeaponEventData) -> (),
+
+	-- Weapon sessions — server-authoritative equipped state per player.
+	EquipWeapon   : (self: Type, player: Player, config: any) -> WeaponSession,
+	UnequipWeapon : (self: Type, player: Player) -> (),
+	GetSession    : (self: Type, player: Player) -> WeaponSession?,
 
 	-- State push — server-authoritative weapon state replicated to clients.
 	UpdateWeaponState    : (self: Type, player: Player, weaponId: string, state: { [string]: any }) -> (),

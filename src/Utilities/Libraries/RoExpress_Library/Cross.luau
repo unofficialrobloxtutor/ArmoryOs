@@ -140,7 +140,8 @@ function Cross.Once(topic: string, handler: (data: any, ctx: MsgContext) -> ())
 			if fired then return end
 			fired = true
 			if conn then
-				pcall(function() (conn :: RBXScriptConnection):Disconnect() end)
+				local connection = conn :: RBXScriptConnection
+				pcall(function() connection:Disconnect() end)
 				conn = nil
 			end
 			local data, ctx = _decode(msg.Data)

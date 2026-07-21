@@ -66,7 +66,8 @@ Module.Unbind = function(name: string)
 	if bound == "RenderStep" then
 		RunService:UnbindFromRenderStep(name)
 	else
-		(bound :: RBXScriptConnection):Disconnect()
+		local connection = bound :: RBXScriptConnection
+		connection:Disconnect()
 	end
 
 	boundNames[name] = nil

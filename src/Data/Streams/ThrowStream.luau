@@ -25,7 +25,7 @@ local Module = {}
 --■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
 --	CHANNEL DEFINITION (shared — must match on server and client)
 --■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-Module.Channel = RoExpress.Stream.Channel("throw/throw", RoExpress.Stream.Schema({
+Module.Channel = RoExpress.Stream.Channel("throw/throw", RoExpress.Stream.Schema.New({
 	{ "WeaponId", "string" },
 	{ "Origin",   "Vector3" },
 	{ "Velocity", "Vector3" },

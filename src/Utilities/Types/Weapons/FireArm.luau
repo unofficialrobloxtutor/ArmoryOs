@@ -16,126 +16,148 @@ export type FireArmTypeNames = "Sniper" | "AssaultRifle" | "Shotgun" | "Pistol" 
 export type ScopeConfig = ScopeClass.ScopeUIProps
 export type ScopeAPI = ScopeClass.ScopeUIAPI
 
-type BaseFireArmConfig = {
-    Physics: {
-        Base_Velocity: number,
-        Gravity_Modifier: number,
-        Max_Distance: number,
-    },
+-- Named sub-config types instead of inline tables — Roblox Studio's live
+-- script parser (as opposed to the IDE's analyzer) doesn't accept indexed-
+-- access types like `Config["Fire"]`, so FireArm_Class references these by
+-- name instead.
+export type PhysicsConfig = {
+    Base_Velocity: number,
+    Gravity_Modifier: number,
+    Max_Distance: number,
+}
 
-    Penetration: {
-        Penetration_Count: number?,
-        Material_Penetration: {
-            [Enum.Material]: {
-                Thickness: number,  -- How Thick Before penetration doesnt happen per materai
-                Power: {[number]: number}, -- How Much subtracted damage after a penetration
-            },
+export type PenetrationConfig = {
+    Penetration_Count: number?,
+    Material_Penetration: {
+        [Enum.Material]: {
+            Thickness: number,  -- How Thick Before penetration doesnt happen per materai
+            Power: {[number]: number}, -- How Much subtracted damage after a penetration
         },
-
-        Damage_Fall_Off_Start: number,
-        Damage_Fall_Off_End: number,
-
-        Ricochet_Angle_Degrees: number,
     },
 
-    Damage: {
-        Base_Damage: number,
-        Headshot_Multiplier: number?,
-        Limb_Multiplier: number?,
+    Damage_Fall_Off_Start: number,
+    Damage_Fall_Off_End: number,
 
-        Min_Damage: number?,
-        Max_Damage: number?,
-    },
+    Ricochet_Angle_Degrees: number,
+}
 
-    Fire: {
-        Fire_Modes: {FireMode},
-        Default_Fire_Mode: FireMode,
+export type DamageConfig = {
+    Base_Damage: number,
+    Headshot_Multiplier: number?,
+    Limb_Multiplier: number?,
 
-        Fire_Rate: number,          -- Rounds per minute
-        Burst_Count: number?,
-        Burst_Rate: number?,
+    Min_Damage: number?,
+    Max_Damage: number?,
+}
 
-        Auto_Fire: boolean,
-    },
+export type FireConfig = {
+    Fire_Modes: {FireMode},
+    Default_Fire_Mode: FireMode,
 
-    Recoil: {
-        Vertical: number,
-        Horizontal: number,
-        Horizontal_Variance: number?,
+    Fire_Rate: number,          -- Rounds per minute
+    Burst_Count: number?,
+    Burst_Rate: number?,
 
-        Recovery_Speed: number,
-        Recovery_Delay: number?,
+    Auto_Fire: boolean,
+}
 
-        Camera_Kick: number?,
-        Camera_Kick_Recovery: number?,
-    },
+export type RecoilConfig = {
+    Vertical: number,
+    Horizontal: number,
+    Horizontal_Variance: number?,
 
-    Spread: {
-        Base_Spread: number,
-        Max_Spread: number,
+    Recovery_Speed: number,
+    Recovery_Delay: number?,
 
-        Moving_Multiplier: number?,
-        Jumping_Multiplier: number?,
-        Crouching_Multiplier: number?,
-        Aiming_Multiplier: number?,
+    Camera_Kick: number?,
+    Camera_Kick_Recovery: number?,
+}
 
-        Increase_Per_Shot: number,
-        Recovery_Speed: number,
-    },
+export type SpreadConfig = {
+    Base_Spread: number,
+    Max_Spread: number,
 
-    Reload: {
-        Reload_Time: number,
-        Tactical_Reload_Time: number?,
-        Empty_Reload_Time: number?,
+    Moving_Multiplier: number?,
+    Jumping_Multiplier: number?,
+    Crouching_Multiplier: number?,
+    Aiming_Multiplier: number?,
 
-        Chamber_Round: boolean?,
-        Interruptible: boolean?,
-    },
+    Increase_Per_Shot: number,
+    Recovery_Speed: number,
+}
 
-    Aim: {
-        Aim_Fov: number?,
-        Aim_Speed: number?,
-        Aim_Sensitivity: number?,
-        Aim_Sway_Multiplier: number?,
-    },
-    Ammo: {
-        Bullet: string,
-        Ejected_Shell: string?,
+export type ReloadConfig = {
+    Reload_Time: number,
+    Tactical_Reload_Time: number?,
+    Empty_Reload_Time: number?,
 
-        Reserve: number?,
-        In: number?,
-        Max: number?
-    },
+    Chamber_Round: boolean?,
+    Interruptible: boolean?,
+}
 
-    -- Auto-resolved by naming convention; only set here to override the auto-loaded asset.
-    Sound: {
-        Fire: string?,
-        Fire_Suppressed: string?,
-        Reload: string?,
-        Empty: string?,
-        Equip: string?,
-        Aim_In: string?,
-        Aim_Out: string?,
-    }?,
+export type AimConfig = {
+    Aim_Fov: number?,
+    Aim_Speed: number?,
+    Aim_Sensitivity: number?,
+    Aim_Sway_Multiplier: number?,
+}
 
-    -- Auto-resolved by naming convention; only set here to override the auto-loaded asset.
-    Animation: {
-        Idle: string?,
-        Fire: string?,
-        Reload: string?,
-        Reload_Empty: string?,
-        Equip: string?,
-        Aim: string?,
-    }?,
+export type AmmoConfig = {
+    Bullet: string,
+    Ejected_Shell: string?,
 
-    Data: {
-        Use_Bullets: boolean,
-        Use_Ray_As_Bullet: boolean,
-        Use_Trail_As_Bullet: boolean,
+    Reserve: number?,
+    In: number?,
+    Max: number?
+}
 
-        Infinite_Ammo: boolean?,
-        Infinite_Reserve: boolean?,
-    }
+-- Auto-resolved by naming convention; only set here to override the auto-loaded asset.
+export type SoundConfig = {
+    Fire: string?,
+    Fire_Suppressed: string?,
+    Reload: string?,
+    Empty: string?,
+    Equip: string?,
+    Aim_In: string?,
+    Aim_Out: string?,
+}
+
+-- Auto-resolved by naming convention; only set here to override the auto-loaded asset.
+export type AnimationConfig = {
+    Idle: string?,
+    Fire: string?,
+    Reload: string?,
+    Reload_Empty: string?,
+    Equip: string?,
+    Aim: string?,
+}
+
+export type DataConfig = {
+    Use_Bullets: boolean,
+    Use_Ray_As_Bullet: boolean,
+    Use_Trail_As_Bullet: boolean,
+    -- Stepped physical projectile: a real part flies from the muzzle at
+    -- Physics.Base_Velocity, dropping under Physics.Gravity_Modifier —
+    -- hits register on arrival, not instantly. Overrides the two flags above.
+    Use_Part_As_Bullet: boolean?,
+
+    Infinite_Ammo: boolean?,
+    Infinite_Reserve: boolean?,
+}
+
+type BaseFireArmConfig = {
+    Physics: PhysicsConfig,
+    Penetration: PenetrationConfig,
+    Damage: DamageConfig,
+    Fire: FireConfig,
+    Recoil: RecoilConfig,
+    Spread: SpreadConfig,
+    Reload: ReloadConfig,
+    Aim: AimConfig,
+    Ammo: AmmoConfig,
+    Sound: SoundConfig?,
+    Animation: AnimationConfig?,
+    Data: DataConfig,
 }
 
 type SniperConfig = {
@@ -244,8 +266,11 @@ type FireArmClassType = {
     ScopeAim: (self: FireArmClassType, isAiming: boolean) -> (),
     SetAim: (self: FireArmClassType, isAiming: boolean) -> (),
 
-    Fire: (self: FireArmClassType) -> (), -- Fires the correct Routes based on the configuration of the weapon, and handles the logic for firing the weapon.
+    Equip: (self: FireArmClassType) -> (),
+    UnEquip: (self: FireArmClassType) -> (),
 
+    Fire: (self: FireArmClassType) -> (), -- Fires the correct Routes based on the configuration of the weapon, and handles the logic for firing the weapon.
+   
     Reload: (self: FireArmClassType) -> (),
     TacticalReload: (self: FireArmClassType) -> (),
     EmptyReload: (self: FireArmClassType) -> (),

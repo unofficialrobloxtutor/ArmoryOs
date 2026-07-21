@@ -15,6 +15,7 @@ local RoExpress  = require(script.Parent.Parent.Parent.Utilities.Libraries.RoExp
 local Router     = require(script.Parent.Parent.Parent.Utilities.Libraries.RoExpress_Library.Router)
 local Validator  = require(script.Parent.Parent.Parent.Utilities.Libraries.Validator_Library)
 local ServerCore = require(script.Parent.Parent.Parent.Utilities.Types.Server)
+local Configs    = require(script.Parent.Parent.Configs)
 --► Types        ◄--
 type App      = RoExpress.App
 type Request  = RoExpress.Request
@@ -62,8 +63,12 @@ Module.Register = function(app: App, server: Server)
 			return
 		end
 
-		-- TODO: look up the baked Config for weaponId (Utilities/Types/Weapons/Throw).
-		res:Send({WeaponId = weaponId, Config = nil})
+		local config = Configs.Get(weaponId)
+		if not config or config.Category ~= "Throw" then
+			res:Status(404):Error("Unknown throwable '" .. weaponId .. "'")
+			return
+		end
+		res:Send({WeaponId = weaponId, Config = config})
 	end)
 
 	----------------------------------------------------------------
@@ -79,7 +84,13 @@ Module.Register = function(app: App, server: Server)
 			return
 		end
 
-		-- TODO: hand off to Throw_Class to construct/attach the tool instance.
+		local config = Configs.Get(weaponId)
+		if not config or config.Category ~= "Throw" then
+			res:Status(404):Error("Unknown throwable '" .. weaponId .. "'")
+			return
+		end
+
+		server:EquipWeapon(player, config)
 		server:Fire("WeaponEquipped", {Player = player, WeaponId = weaponId})
 		res:Send({WeaponId = weaponId, Equipped = true})
 	end)
@@ -89,8 +100,8 @@ Module.Register = function(app: App, server: Server)
 		local weaponId = req.params.WeaponId :: string
 		local player    = req.player
 
-		-- TODO: hand off to Throw_Class to detach/cleanup the tool instance.
 		if player then
+			server:UnequipWeapon(player)
 			server:Fire("WeaponUnequipped", {Player = player, WeaponId = weaponId})
 		end
 		res:Send({WeaponId = weaponId, Equipped = false})

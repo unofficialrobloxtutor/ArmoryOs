@@ -3518,6 +3518,25 @@ do -- scope block: ViewModel tab locals die here
 	-- Ordered display list of loaded entries (name, rigType)
 	local vmEntries: { { name: string, rigType: string } } = {}
 	local vmEntryRows: { Frame } = {}
+	-- Only one rig may be in use at a time — the rigType currently
+	-- registered under script.ViewModels (nil = none). Use/Unuse toggles
+	-- it; Remove clears it if the removed entry was the one in use.
+	local inUseRigType: string? = nil
+
+	-- Tears down the in-use rig: destroys its script.ViewModels copy and
+	-- clears the viewport preview so no stale rig lingers in the viewframe.
+	local function unuseCurrentRig()
+		if not inUseRigType then
+			return
+		end
+		local folder = script:FindFirstChild("ViewModels")
+		local copy = folder and folder:FindFirstChild(inUseRigType)
+		if copy then
+			copy:Destroy()
+		end
+		setPreviewModel(nil)
+		inUseRigType = nil
+	end
 
 	local function rebuildVMLibraryRows()
 		for _, row in ipairs(vmEntryRows) do
@@ -3563,7 +3582,7 @@ do -- scope block: ViewModel tab locals die here
 
 			-- Use / Remove buttons
 			local useBtn = Instance.new("TextButton")
-			useBtn.Text = "Use"
+			useBtn.Text = (inUseRigType == entry.rigType) and "Unuse" or "Use"
 			useBtn.Font = Enum.Font.SourceSansSemibold
 			useBtn.TextSize = 11
 			useBtn.TextColor3 = Color3.new(1,1,1)
@@ -3590,6 +3609,23 @@ do -- scope block: ViewModel tab locals die here
 
 			local capturedEntry = entry
 			useBtn.MouseButton1Click:Connect(function()
+				-- Toggle off: this entry is the one in use → Unuse it,
+				-- clearing both the script.ViewModels copy and the preview.
+				if inUseRigType == capturedEntry.rigType then
+					unuseCurrentRig()
+					rebuildVMLibraryRows()
+					pushNotification("info", string.format("'%s' is no longer in use.", capturedEntry.name))
+					playSound(SND_DELETE)
+					return
+				end
+
+				-- Only one rig in use at a time — block, don't silently swap.
+				if inUseRigType then
+					pushNotification("error", string.format("A %s rig is already in use — click its 'Unuse' button first.", inUseRigType))
+					playSound(SND_ERROR)
+					return
+				end
+
 				-- Register this model under script.ViewModels/<rigType>
 				local folder = script:FindFirstChild("ViewModels")
 				if not folder then
@@ -3602,11 +3638,19 @@ do -- scope block: ViewModel tab locals die here
 				local copy = loadedVMs[capturedEntry.rigType]:Clone()
 				copy.Name = capturedEntry.rigType
 				copy.Parent = folder
+				inUseRigType = capturedEntry.rigType
+				setPreviewModel(copy)
+				rebuildVMLibraryRows()
 				pushNotification("success", string.format("✓ Using '%s' as %s.", capturedEntry.name, capturedEntry.rigType))
 				playSound(SND_SAVE)
 			end)
 
 			removeBtn.MouseButton1Click:Connect(function()
+				-- Removing the rig that's in use also unuses it, so the
+				-- preview and script.ViewModels copy never go stale.
+				if inUseRigType == capturedEntry.rigType then
+					unuseCurrentRig()
+				end
 				loadedVMs[capturedEntry.rigType] = nil
 				for i2, e in ipairs(vmEntries) do
 					if e == capturedEntry then

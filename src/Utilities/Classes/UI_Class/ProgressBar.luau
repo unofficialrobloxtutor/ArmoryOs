@@ -10,7 +10,7 @@
 
 local TweenService = game:GetService("TweenService")
 local Theme = require(script.Parent.Theme)
-local Format = require(script.Parent.Format_Library)
+local Format = require(script.Parent.Parent.Parent.Libraries.Format_Library)
 
 local ProgressBar = {}
 

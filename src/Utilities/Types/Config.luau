@@ -7,15 +7,21 @@
 --  ◄► Description: Utilities/Types type definitions for framework-wide
 --                  configuration values and options.
 --■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-local Weapon = require(`../Types/Weapons`)
+local ViewModelTypes = require(`../Types/ViewModel`)
+local Weapons = require(`../Types/Weapons`)
 
---■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
--- Constructor
---■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+export type ViewModelSettings = ViewModelTypes.ViewModelSettings
 
-type BaseConfig = {
-	ViewModel: Model,
+-- Distinguishes which weapon category WeaponSettings holds — read this
+-- before narrowing WeaponSettings (FireArm.Config | Melee.Config |
+-- Throw.Config), rather than trying to infer it from WeaponSettings.Type
+-- alone (FireArmTypeNames/MeleeTypeNames/ThrowTypeNames aren't guaranteed
+-- disjoint from each other).
+export type Category = "FireArm" | "Melee" | "Throw"
+
+export type BaseConfig = {
 	Name: string,
+	Category: Category,
 	Damage: {
 		Base: number,
 		Limb: {
@@ -28,8 +34,11 @@ type BaseConfig = {
 	},
 	CameraInfo: {
 		DefaultFOV: number?,
-		ViewModelOffset: CFrame?,
 	},
+
+	ViewModelSettings: ViewModelSettings,
+	WeaponSettings: Weapons.Config, -- FireArm.Config | Melee.Config | Throw.Config
 }
 
+return {}
 

@@ -18,3 +18,6 @@ export type Melee = Melee.Type
 export type Throw = Throw.Type
 
 export type Config = FireArm.Config | Melee.Config | Throw.Config
+export type Class = FireArm.Type | Melee.Type | Throw.Type
+
+return {}

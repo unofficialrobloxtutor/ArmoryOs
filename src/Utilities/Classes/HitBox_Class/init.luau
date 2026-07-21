@@ -15,7 +15,7 @@ local PlayerService = game:GetService("Players")
 local RunService = game:GetService("RunService")
 -- Requirements
 local ConnectionLibary = require(`../Libraries/Connection_Library`)
-local Visuals = require("@self/HitBoxVisuals")
+local Visuals = require("@self/HitBox_Visuals")
 -- Connections
 
 -- Remotes

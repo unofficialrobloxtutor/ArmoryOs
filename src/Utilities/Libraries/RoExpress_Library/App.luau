@@ -228,7 +228,8 @@ local function _handler(self: Type, Player: Player, Payload: Payload, _depth: nu
 	end
 
 	-- handle typed param failures
-	local typeFail = (match :: any)._typeFail
+	local matchAny = match :: any
+	local typeFail = matchAny._typeFail
 	if typeFail then
 		warn("RoExpress.App: 400 param type failure — '" .. typeFail.name .. "' expected " .. typeFail.expectedType .. " on route '" .. Payload.route .. "' from " .. Player.Name)
 		local res = _buildResponse(self.Remote, Player, Payload.requestId, Payload.method, false)
@@ -246,8 +247,9 @@ local function _handler(self: Type, Player: Player, Payload: Payload, _depth: nu
 		return
 	end
 
-	local compress = (match.route :: any).compress == true
-	local algo     = (match.route :: any).algo
+	local routeAny = match.route :: any
+	local compress = routeAny.compress == true
+	local algo     = routeAny.algo
 	local res      = _buildResponse(self.Remote, Player, Payload.requestId, Payload.method, compress, algo)
 
 	local argcount = debug.info(match.route.handler, "a")
@@ -278,14 +280,15 @@ local function _handler(self: Type, Player: Player, Payload: Payload, _depth: nu
 		warn("RoExpress.App: Handler error on '" .. Payload.route .. "':", err)
 	end
 
-	if (res :: any)._redirect then
+	local resAny = res :: any
+	if resAny._redirect then
 		if depth >= 5 then
 			warn("RoExpress.App: Too many redirects on route '" .. Payload.route .. "'")
 			_buildResponse(self.Remote, Player, Payload.requestId, Payload.method):Status(508):Error("Too many redirects")
 			return
 		end
 		local redirectPayload  = table.clone(Payload)
-		redirectPayload.route  = (res :: any)._redirect
+		redirectPayload.route  = resAny._redirect
 		_handler(self, Player, redirectPayload, depth + 1)
 		return
 	end

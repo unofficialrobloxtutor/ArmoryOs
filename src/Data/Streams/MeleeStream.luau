@@ -27,7 +27,7 @@ local VALID_ATTACK_KINDS = { Light = true, Heavy = true }
 --■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
 --	CHANNEL DEFINITION (shared — must match on server and client)
 --■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-Module.Channel = RoExpress.Stream.Channel("melee/attack", RoExpress.Stream.Schema({
+Module.Channel = RoExpress.Stream.Channel("melee/attack", RoExpress.Stream.Schema.New({
 	{ "WeaponId", "string" },
 	{ "Kind",     "string" },
 	{ "Combo",    "u8" },

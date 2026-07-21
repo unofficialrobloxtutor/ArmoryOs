@@ -27,7 +27,7 @@ local Module = {}
 --■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
 --	CHANNEL DEFINITION (shared — must match on server and client)
 --■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-Module.Channel = RoExpress.Stream.Channel("firearm/fire", RoExpress.Stream.Schema({
+Module.Channel = RoExpress.Stream.Channel("firearm/fire", RoExpress.Stream.Schema.New({
 	{ "WeaponId",  "string" },
 	{ "Origin",    "Vector3" },
 	{ "Direction", "Vector3" },
@@ -52,9 +52,43 @@ function Module.Register(server: Server)
 			return
 		end
 
-		-- TODO: server-authoritative fire validation — ammo deduction, LOS/
-		-- raycast resolution (RayCast_Library), fire-rate re-check against
-		-- the weapon's Config beyond the channel's flat maxRate ceiling.
+		-- Server-authoritative fire validation against the player's session:
+		-- must have this weapon equipped, not be reloading, respect the
+		-- config fire-rate, and have a round in the magazine.
+		local session = server:GetSession(player)
+		if not session or session.WeaponId ~= data.WeaponId or session.Category ~= "FireArm" then
+			return
+		end
+		if session.Reloading then
+			return
+		end
+
+		local settings  = session.Config.WeaponSettings or {}
+		local fireCfg   = settings.Fire or {}
+		local dataFlags = settings.Data or {}
+
+		-- Fire_Rate is rounds-per-minute; allow 20% slack for network jitter.
+		local now = os.clock()
+		local minInterval = 60 / (fireCfg.Fire_Rate or 600)
+		if now - session.LastFireAt < minInterval * 0.8 then
+			return
+		end
+
+		local ammo = session.Ammo
+		if ammo then
+			if ammo.In <= 0 and not dataFlags.Infinite_Ammo then
+				return
+			end
+			if not dataFlags.Infinite_Ammo then
+				ammo.In -= 1
+			end
+		end
+		session.LastFireAt = now
+
+		if ammo then
+			server:UpdateWeaponState(player, data.WeaponId, {Ammo = {In = ammo.In, Reserve = ammo.Reserve, Max = ammo.Max}})
+		end
+
 		server:Fire("WeaponFired", {
 			Player   = player,
 			WeaponId = data.WeaponId,

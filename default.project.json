@@ -3,8 +3,29 @@
   "tree": {
     "$className": "DataModel",
     "ReplicatedStorage": {
-      "AmoryOS": {
+      "Plugins": {
+        "$className": "Folder",
+        "ArmoryOSPlugins": {
+          "$path": "Plugins",
+          "$ignoreUnknownInstances": true
+        }
+      },
+      "ArmoryOS": {
         "$path": "src"
+      }
+    },
+    "ServerScriptService": {
+      "ArmoryOSServer": {
+        "$path": "src/Code/Server",
+        "$ignoreUnknownInstances": true
+      }
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "ArmoryOSClient": {
+          "$path": "src/Code/Client",
+          "$ignoreUnknownInstances": true
+        }
       }
     }
   }

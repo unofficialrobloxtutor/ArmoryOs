@@ -228,7 +228,8 @@ local function _handler(self: Type, Player, Payload)
         return
     end
 
-    local typeFail = (match :: any)._typeFail
+    local matchAny = match :: any
+    local typeFail = matchAny._typeFail
     if typeFail then
         local res = _buildResponse(self.Remote, Player, Payload.requestId, Payload.method, false)
         if self._router._paramError then
@@ -240,8 +241,9 @@ local function _handler(self: Type, Player, Payload)
         return
     end
 
-    local compress = (match.route :: any).compress == true
-    local algo     = (match.route :: any).algo
+    local routeAny = match.route :: any
+    local compress = routeAny.compress == true
+    local algo     = routeAny.algo
     local res      = _buildResponse(self.Remote, Player, Payload.requestId, Payload.method, compress, algo)
 
     local argcount = debug.info(match.route.handler, "a")

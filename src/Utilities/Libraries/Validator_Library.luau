@@ -218,14 +218,15 @@ end
 
 --► Returns true if a value is an Instance of (or descending from) a given ClassName
 Module.IsInstanceOfClass = function(value: any, className: string): boolean
-	return typeof(value) == "Instance" and (value :: Instance):IsA(className)
+	if typeof(value) ~= "Instance" then return false end
+	return value:IsA(className)
 end
 
 --► Returns true if a value is a member of a given Enum
 -- IsEnumMember(Enum.Material.Wood, Enum.Material) → true
 Module.IsEnumMember = function(value: any, enumType: Enum): boolean
 	if typeof(value) ~= "EnumItem" then return false end
-	return (value :: EnumItem).EnumType == enumType
+	return value.EnumType == enumType
 end
 
 --■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
